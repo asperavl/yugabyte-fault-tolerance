@@ -1,0 +1,101 @@
+services:
+  yb1:
+    image: ${YB_IMAGE:-yugabytedb/yugabyte:2024.1.3.0-b105}
+    container_name: yb1
+    hostname: yb1
+    command: >
+      bin/yugabyted start
+      --base_dir=/home/yugabyte/yb_data
+      --listen=yb1
+      --daemon=false
+    environment:
+      - YB_PER_NODE_MEM_LIMIT=2GB
+    ports:
+      - "${YB1_YSQL_PORT:-5433}:5433"
+      - "${YB1_UI_PORT:-7001}:7000"
+      - "${YB1_TSERVER_PORT:-9001}:9000"
+    volumes:
+      - yb1_data:/home/yugabyte/yb_data
+    networks:
+      - yb_network
+    healthcheck:
+      test: ["CMD-SHELL", "/home/yugabyte/postgres/bin/pg_isready -h yb1 -p 5433"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 25s
+    restart: unless-stopped
+
+  yb2:
+    image: ${YB_IMAGE:-yugabytedb/yugabyte:2024.1.3.0-b105}
+    container_name: yb2
+    hostname: yb2
+    command: >
+      bin/yugabyted start
+      --base_dir=/home/yugabyte/yb_data
+      --listen=yb2
+      --join=yb1
+      --daemon=false
+    environment:
+      - YB_PER_NODE_MEM_LIMIT=2GB
+    ports:
+      - "${YB2_YSQL_PORT:-5434}:5433"
+      - "${YB2_UI_PORT:-7002}:7000"
+      - "${YB2_TSERVER_PORT:-9002}:9000"
+    volumes:
+      - yb2_data:/home/yugabyte/yb_data
+    networks:
+      - yb_network
+    depends_on:
+      - yb1
+    healthcheck:
+      test: ["CMD-SHELL", "/home/yugabyte/postgres/bin/pg_isready -h yb2 -p 5433"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 25s
+    restart: unless-stopped
+
+  yb3:
+    image: ${YB_IMAGE:-yugabytedb/yugabyte:2024.1.3.0-b105}
+    container_name: yb3
+    hostname: yb3
+    command: >
+      bin/yugabyted start
+      --base_dir=/home/yugabyte/yb_data
+      --listen=yb3
+      --join=yb1
+      --daemon=false
+    environment:
+      - YB_PER_NODE_MEM_LIMIT=2GB
+    ports:
+      - "${YB3_YSQL_PORT:-5435}:5433"
+      - "${YB3_UI_PORT:-7003}:7000"
+      - "${YB3_TSERVER_PORT:-9003}:9000"
+    volumes:
+      - yb3_data:/home/yugabyte/yb_data
+    networks:
+      - yb_network
+    depends_on:
+      - yb1
+    healthcheck:
+      test: ["CMD-SHELL", "/home/yugabyte/postgres/bin/pg_isready -h yb3 -p 5433"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 25s
+    restart: unless-stopped
+
+networks:
+  yb_network:
+    name: yb_network
+    driver: bridge
+
+volumes:
+  yb1_data:
+    name: yb1_data
+  yb2_data:
+    name: yb2_data
+  yb3_data:
+    name: yb3_data
+

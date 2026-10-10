@@ -1,0 +1,9 @@
+{
+  "trial": 3,
+  "t_start": "2026-10-10T08:04:03.233Z",
+  "t_fault_injected": "2026-10-10T08:05:13.933Z",
+  "t_fault_recovered": "2026-10-10T08:06:17.352Z",
+  "t_end": "2026-10-10T08:07:11.354Z",
+  "target_rate_ops": 50,
+  "node_failed": "yb2"
+}
